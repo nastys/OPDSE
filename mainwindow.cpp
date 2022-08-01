@@ -1087,11 +1087,14 @@ void MainWindow::on_actionAdd_command_triggered()
         isLoading=true;
         if(command->endsWith(';')) command->chop(1);
         QStringList commandlist;
-        commandlist=ui->textEdit->document()->toPlainText().split(';', Qt::SkipEmptyParts).replaceInStrings("\n", "").replaceInStrings(" ", "");
+		commandlist=ui->textEdit->document()->toPlainText().split(';', Qt::SkipEmptyParts).replaceInStrings("\n", "").replaceInStrings(" ", "");
         insertCommand(commandlist, *time, *command);
         ui->textEdit->clear();
-        for(int i=0; i<commandlist.length(); i++)
-            ui->textEdit->insertPlainText(commandlist.at(i)+";\n");
+		for(int i=0; i<commandlist.length(); i++)
+			if(commandlist.at(i).isEmpty())
+				ui->textEdit->insertPlainText(commandlist.at(i));
+			else
+				ui->textEdit->insertPlainText(commandlist.at(i)+";\n");
         isLoading=false;
     }
 }

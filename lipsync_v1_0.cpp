@@ -124,5 +124,5 @@ void LipSync_v1_0::lipsyncFromVtt(QPlainTextEdit *dscpte, QFile &vtt, lipsync_se
         if(commandlist.at(i).isEmpty())
             dscpte->insertPlainText(commandlist.at(i));
         else
-            dscpte->insertPlainText(commandlist.at(i)+';');
+			dscpte->insertPlainText(commandlist.at(i)+";\n");
 }

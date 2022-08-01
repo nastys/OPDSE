@@ -62,5 +62,5 @@ void fromVtt(QFile &file, QPlainTextEdit *textedit, QPlainTextEdit *pvdb, int pv
         if(commandlist.at(i).isEmpty())
             textedit->insertPlainText(commandlist.at(i));
         else
-            textedit->insertPlainText(commandlist.at(i)+';');
+			textedit->insertPlainText(commandlist.at(i)+";\n");
 }

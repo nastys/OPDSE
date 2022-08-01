@@ -470,7 +470,7 @@ END();</string>
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -812,6 +812,9 @@ END();</string>
    </property>
   </action>
   <action name="actionAdd_command">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="res.qrc">
      <normaloff>:/icons/icons8/color/icons/icons8/color/icons8-aggiungi-48.png</normaloff>:/icons/icons8/color/icons/icons8/color/icons8-aggiungi-48.png</iconset>

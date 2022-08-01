@@ -37,7 +37,7 @@ bool insertBranch(QStringList &commandList, int line, int branch, QString suffix
 
     if(findBranchOfCommand(commandList, line)!=branch)
     {
-        commandList.insert(line, "PV_BRANCH_MODE("+QString::number(branch)+")"+suffix);
+		commandList.insert(line, "PV_BRANCH_MODE("+QString::number(branch)+")"+suffix);
         return 1;
     }
 
@@ -46,28 +46,75 @@ bool insertBranch(QStringList &commandList, int line, int branch, QString suffix
 
 bool insertCommand(QStringList &commandList, int time, QString command, int branch, QString suffix)
 {
-    int lastTimeCommand=-1;
-    int lastTimeCommandLine=-1;
+	if (!commandList.contains("TIME(0)"))
+	{
+		commandList.insert(0, "TIME(0)");
+	}
+
+	if (commandList.last() != "")
+	{
+		commandList.append("");
+	}
 
     for(int i=0; i<commandList.length(); i++)
     {
         const QString currentCommand=commandList.at(i).simplified();
-        if(currentCommand.startsWith("TIME("))
-        {
-            int thisTimeCommand=getTimeFromTimeCommand(currentCommand);
-            const int thisTimeCommandLine=i;
+		if(currentCommand.startsWith("TIME("))
+		{
+			const int thisTime = getTimeFromTimeCommand(currentCommand);
+
+			if (thisTime == time)
+			{
+				commandList.insert(i+1, command.simplified());
+				return insertBranch(commandList, i, branch, suffix);
+			}
+			if (thisTime > time)
+			{
+				// add TIME+command before this line
+				commandList.insert(i, command.simplified());
+				commandList.insert(i, "TIME("+QString::number(time)+")");
+				return insertBranch(commandList, i, branch, suffix);
+			}
         }
-        else if(i==commandList.length()-1) // insert TIME + command before PV_END()'s TIME
-        {
-            int pvEndTime = findTimeOfCommand(commandList, "PV_END()"+suffix);
-            if(pvEndTime == -1) pvEndTime = findTimeOfCommand(commandList, "END()"+suffix);
-            if(pvEndTime == -1) pvEndTime = commandList.length()-1;
-            commandList.insert(pvEndTime-1, command);
-            commandList.insert(pvEndTime-1, "TIME("+QString::number(time)+")");
-            return insertBranch(commandList, pvEndTime-1, branch, suffix);
+		else if(i==commandList.length()-1)
+		{
+			int pvEndLine = -1;
+			int endLine = -1;
+			for (int j=i; j>=0; j--)
+			{
+				if (commandList.at(j).startsWith("PV_END()"))
+				{
+					pvEndLine = j;
+					break;
+				}
+				else if (endLine == -1 && commandList.at(j).startsWith("END()"))
+					endLine = j;
+			}
+			int targetEndLine = pvEndLine == -1 ? endLine : pvEndLine;
+
+			if(targetEndLine == -1)
+			{
+				commandList.append({"TIME("+QString::number(time)+")", command.simplified()});
+				return insertBranch(commandList, commandList.length()-1, branch, suffix);
+			}
+			commandList.insert(targetEndLine, command.simplified());
+			commandList.insert(targetEndLine, "TIME("+QString::number(time)+")");
+			return insertBranch(commandList, targetEndLine-1, branch, suffix);
+
+
+			int pvEndTime = findTimeOfCommand(commandList, "PV_END()"+suffix);
+			if(pvEndTime == -1) pvEndTime = findTimeOfCommand(commandList, "END()"+suffix);
+			if(pvEndTime == -1)
+			{
+				commandList.append({"TIME("+QString::number(time)+")", command.simplified()});
+				return insertBranch(commandList, commandList.length()-1, branch, suffix);
+			}
+			commandList.insert(pvEndTime+1, command.simplified());
+			commandList.insert(pvEndTime+1, "TIME("+QString::number(time)+")");
+			return insertBranch(commandList, pvEndTime, branch, suffix);
         }
-    }
-    return 0; // not inserted
+	}
+	return 0;
 }
 
 bool removeCommand(QStringList &commandList, int time, QString command)
@@ -166,7 +213,7 @@ int findBranchOfCommand(QStringList &commandList, int line)
         const QString currentCommand=commandList.at(i).simplified();
         if(currentCommand.startsWith("PV_BRANCH_MODE("))
             lastBranch = i;
-        if(i==line)
+		if(i==line && lastBranch != -1)
         {
             QStringList split = commandList.at(lastBranch).simplified().split(')');
             if(split.length()>0)

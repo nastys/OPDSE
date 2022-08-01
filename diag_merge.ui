@@ -35,6 +35,9 @@
    </item>
    <item>
     <widget class="QCommandLinkButton" name="commandLinkButton_Merge">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="text">
       <string>Merge with current file</string>
      </property>
